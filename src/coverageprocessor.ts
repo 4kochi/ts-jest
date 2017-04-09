@@ -6,8 +6,8 @@ const loadCoverage = require('remap-istanbul/lib/loadCoverage');
 const remap = require('remap-istanbul/lib/remap');
 const writeReport = require('remap-istanbul/lib/writeReport');
 const istanbulInstrument = require('istanbul-lib-instrument');
-import pickBy = require('lodash.pickby')
-import { getJestConfig } from './utils';
+import pickBy = require('lodash.pickby');
+import { getJestConfig, REPLACE_TOKEN } from './utils';
 const glob = require('glob-all');
 
 interface CoverageMap {
@@ -43,6 +43,9 @@ function processResult(result: Result): Result {
   let cachedFiles = fs.readdirSync(basepath);
   cachedFiles.map((p) => {
     let filename = new Buffer(p.replace(basepath, ''), 'base64').toString('utf8');
+    if (jestConfig.globals.__REPLACE_FILE_NAME_PART__){
+      filename = filename.replace(REPLACE_TOKEN, jestConfig.globals.__REPLACE_FILE_NAME_PART__);
+    }
     coveredFiles.push(filename);
     sourceCache[filename] = fs.readFileSync(path.join(basepath, p), 'ascii');
   });

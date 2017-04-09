@@ -1,12 +1,14 @@
 import * as fs from 'fs-extra';
 import * as tsc from 'typescript';
-import {getTSConfig} from './utils';
+import {getTSConfig, getJestConfig, REPLACE_TOKEN} from './utils';
 // TODO: rework next to ES6 style imports
 const glob = require('glob-all');
 const nodepath = require('path');
 
 export function process(src, path, config) {
     const compilerOptions = getTSConfig(config.globals, config.collectCoverage);
+    const root = require('jest-util').getPackageRoot();
+    const jestConfig = getJestConfig(root).config;
 
     const isTsFile = path.endsWith('.ts') || path.endsWith('.tsx');
     const isJsFile = path.endsWith('.js') || path.endsWith('.jsx');
@@ -27,6 +29,10 @@ export function process(src, path, config) {
                 compilerOptions: compilerOptions,
                 fileName: path
             });
+
+        if (jestConfig.globals.__REPLACE_FILE_NAME_PART__){
+            path = path.replace(jestConfig.globals.__REPLACE_FILE_NAME_PART__, REPLACE_TOKEN);
+        }
 
         //store transpiled code contains source map into cache, except test cases
         if (!config.testRegex || !path.match(config.testRegex)) {

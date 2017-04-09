@@ -59,9 +59,15 @@ function readRawConfig(argv, root) {
 
 export function getJestConfig(root) {
   const yargs = require('yargs');
-  const argv = yargs(process.argv.slice(2)).argv;
-  const rawConfig = readRawConfig(argv, root);
-  return Object.freeze(setFromArgv(rawConfig, argv));
+
+  // add try catch block for tests where the code is not run from jest directly
+   try {
+    const argv = yargs(process.argv.slice(2)).argv;
+    const rawConfig = readRawConfig(argv, root);
+   return Object.freeze(setFromArgv(rawConfig, argv));
+ } catch (e) {
+   return {};
+   }
 }
 
 export function getTSConfig(globals, collectCoverage: boolean = false) {
@@ -82,13 +88,13 @@ export function getTSConfig(globals, collectCoverage: boolean = false) {
 
     if (configFileName === 'tsconfig.json') {
       // hardcode module to 'commonjs' in case the config is being loaded
-      // from the default tsconfig file. This is to ensure that coverage 
-      // works well. If there's a need to override, it can be done using 
+      // from the default tsconfig file. This is to ensure that coverage
+      // works well. If there's a need to override, it can be done using
       // the global __TS_CONFIG__ setting in Jest config
       config.module = 'commonjs';
     }
   }
-  
+
   config.module = config.module || 'commonjs';
 
   if (config.inlineSourceMap !== false) {
@@ -109,3 +115,5 @@ export function getTSConfig(globals, collectCoverage: boolean = false) {
 
   return tsc.convertCompilerOptionsFromJson(config, undefined).options;
 }
+
+export const REPLACE_TOKEN = '%REPL%';
